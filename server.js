@@ -119,3 +119,14 @@ Retourne UNIQUEMENT du JSON valide :
     }
   ]
 });
+catch (err) {
+  console.log("OPENAI ERROR:", err);
+
+  res.status(500).json({
+    type: "ERROR",
+    object: "error",
+    risk: "UNKNOWN",
+    explanation: err.message,
+    action: "check logs"
+  });
+}
