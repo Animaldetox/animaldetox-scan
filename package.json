@@ -10,3 +10,4 @@
     "cors": "^2.8.5"
   }
 }
+npm install openai multer cors express
