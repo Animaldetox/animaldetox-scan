@@ -2,16 +2,15 @@ const express = require("express");
 const cors = require("cors");
 
 const app = express();
-
 app.use(cors());
 app.use(express.json());
 
-// test
+// ROUTE TEST (IMPORTANT)
 app.get("/", (req, res) => {
-  res.send("Animal Detox API OK");
+  res.send("✅ Animal Detox API OK");
 });
 
-// API scan (simulation IA)
+// ROUTE SCANNER
 app.post("/analyze", (req, res) => {
   res.json({
     object: "chocolate",
@@ -23,5 +22,5 @@ app.post("/analyze", (req, res) => {
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-  console.log("Server running");
+  console.log("Server OK on port " + PORT);
 });
