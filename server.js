@@ -1,34 +1,19 @@
-const express = require("express");
-const cors = require("cors");
+async function scan() {
+  try {
 
-const app = express();
+    const res = await fetch("https://TON-URL.onrender.com/analyze", {
+      method: "POST"
+    });
 
-app.use(cors());
-app.use(express.json());
+    const data = await res.json();
 
-// TEST SÛR
-app.get("/", (req, res) => {
-  res.send("✅ Animal Detox API OK");
-});
+    document.getElementById("result").innerHTML =
+      "☠️ " + data.risk_level + "<br>" +
+      data.explanation;
 
-// DEBUG SIMPLE (GET)
-app.get("/analyze", (req, res) => {
-  res.json({ status: "GET OK" });
-});
-
-// VRAI ENDPOINT
-app.post("/analyze", (req, res) => {
-  console.log("POST received");
-
-  res.json({
-    object: "chocolate",
-    risk_level: "HIGH",
-    explanation: "Toxique pour chiens (théobromine)"
-  });
-});
-
-const PORT = process.env.PORT || 3000;
-
-app.listen(PORT, () => {
-  console.log("Server running on " + PORT);
-});
+  } catch (err) {
+    console.log(err);
+    document.getElementById("result").innerHTML =
+      "❌ API FAIL";
+  }
+}
