@@ -1,53 +1,52 @@
 const express = require("express");
 const cors = require("cors");
+const multer = require("multer");
+const fs = require("fs");
 
 const app = express();
+app.use(cors());
 
-app.use(cors({ origin: "*" }));
-app.use(express.json());
+const upload = multer({ dest: "uploads/" });
 
 app.get("/", (req, res) => {
-  res.send("OK");
+  res.send("Animal Detox API OK");
 });
 
-app.post("/analyze", (req, res) => {
+// 🧠 IA SIMULÉE (on branchera OpenAI après)
+app.post("/analyze", upload.single("image"), (req, res) => {
 
-  const fileName = (req.body.fileName || "").toLowerCase();
+  const file = req.file;
 
-  let result;
+  if (!file) {
+    return res.json({
+      error: "no image"
+    });
+  }
 
-  if (fileName.includes("choco")) {
-    result = {
+  // simulation intelligente (étape A)
+  const fakeResults = [
+    {
       object: "Chocolate",
-      risk_level: "HIGH",
+      risk: "HIGH",
       explanation: "Toxique pour chiens"
-    };
-  }
-  else if (fileName.includes("lily")) {
-    result = {
+    },
+    {
       object: "Lily",
-      risk_level: "CRITICAL",
+      risk: "CRITICAL",
       explanation: "Mortel pour chats"
-    };
-  }
-  else if (fileName.includes("onion")) {
-    result = {
-      object: "Onion",
-      risk_level: "HIGH",
-      explanation: "Dangereux pour chiens et chats"
-    };
-  }
-  else {
-    result = {
-      object: "Unknown",
-      risk_level: "LOW",
-      explanation: "Pas de danger détecté (simulation)"
-    };
-  }
+    },
+    {
+      object: "Plant unknown",
+      risk: "MEDIUM",
+      explanation: "Plante potentiellement toxique"
+    }
+  ];
+
+  const result = fakeResults[Math.floor(Math.random() * fakeResults.length)];
 
   res.json(result);
+
+  fs.unlinkSync(file.path);
 });
 
-const PORT = process.env.PORT || 3000;
-
-app.listen(PORT, () => console.log("running"));
+app.listen(3000, () => console.log("running"));
