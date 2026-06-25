@@ -27,22 +27,25 @@ app.post("/analyze", upload.single("image"), async (req, res) => {
 
   try {
 
-    // ⚠️ check image
+    // ❌ check image
     if (!req.file) {
       return res.status(400).json({
         type: "ERROR",
+        object: "no_file",
         risk: "UNKNOWN",
-        explanation: "No image uploaded",
-        action: "Send image file"
+        explanation: "Aucune image reçue",
+        action: "Envoyer une image"
       });
     }
 
-    // 📸 convert image to base64
+    // 📸 image en base64
     const imageBase64 = fs.readFileSync(req.file.path, {
       encoding: "base64"
     });
 
-    // 🧠 OPENAI VISION CALL
+    console.log("OPENAI KEY OK =", !!process.env.OPENAI_API_KEY);
+
+    // 🧠 OPENAI CALL (FORMAT CORRIGÉ)
     const response = await client.responses.create({
       model: "gpt-4.1-mini",
       input: [
@@ -52,9 +55,9 @@ app.post("/analyze", upload.single("image"), async (req, res) => {
             {
               type: "input_text",
               text: `
-Tu es un expert vétérinaire.
+Tu es un vétérinaire expert.
 
-Analyse cette image et détecte si c’est dangereux pour un chien ou un chat.
+Analyse cette image et dis si c’est dangereux pour un chien ou un chat.
 
 Réponds UNIQUEMENT en JSON valide :
 
@@ -62,21 +65,21 @@ Réponds UNIQUEMENT en JSON valide :
 "type": "PLANT | FOOD | HOUSEHOLD | UNKNOWN",
 "object": "nom de l'objet",
 "risk": "LOW | MEDIUM | HIGH | CRITICAL",
-"explanation": "explication simple pour propriétaire d’animal",
+"explanation": "explication simple pour un propriétaire d’animal",
 "action": "conseil vétérinaire"
 }
               `
             },
             {
               type: "input_image",
-              image_base64: imageBase64
+              image_url: `data:image/jpeg;base64,${imageBase64}`
             }
           ]
         }
       ]
     });
 
-    // 📦 extraction réponse IA
+    // 📦 extraction réponse
     const text = response.output[0].content[0].text;
 
     let parsed;
@@ -89,21 +92,32 @@ Réponds UNIQUEMENT en JSON valide :
         object: "invalid_json",
         risk: "UNKNOWN",
         explanation: text,
-        action: "Fix JSON parsing"
+        action: "Erreur format IA"
       };
     }
 
-    // 🧹 cleanup file
+    // 🧹 cleanup fichier
     fs.unlinkSync(req.file.path);
 
     res.json(parsed);
 
-  } 
+  } catch (err) {
+
+    console.log("❌ SERVER ERROR:", err);
+
+    res.status(500).json({
+      type: "ERROR",
+      object: "server_error",
+      risk: "UNKNOWN",
+      explanation: err?.message || "unknown error",
+      action: "check OpenAI API key / logs Render"
+    });
+  }
+});
 
 // 🚀 START SERVER
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-  console.log("🐾 Animal Detox running on port", PORT);
+  console.log("🐾 Animal Detox API running on port", PORT);
 });
-console.log("ENV KEY =", process.env.OPENAI_API_KEY);
