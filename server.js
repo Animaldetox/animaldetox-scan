@@ -1,4 +1,17 @@
-app.post("/analyze", upload.single("image"), (req, res) => {
+{
+  "name": "animaldetox-api",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.0",
+    "cors": "^2.8.5",
+    "multer": "^1.4.5",
+    "openai": "^4.0.0"
+  }
+}.post("/analyze", upload.single("image"), (req, res) => {
 
   const fileName = req.file?.originalname?.toLowerCase() || "";
 
