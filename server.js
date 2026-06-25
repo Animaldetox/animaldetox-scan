@@ -1,65 +1,91 @@
-{
-  "name": "animaldetox-api",
-  "version": "1.0.0",
-  "main": "server.js",
-  "scripts": {
-    "start": "node server.js"
-  },
-  "dependencies": {
-    "express": "^4.18.0",
-    "cors": "^2.8.5",
-    "multer": "^1.4.5",
-    "openai": "^4.0.0"
-  }
-}.post("/analyze", upload.single("image"), (req, res) => {
+const express = require("express");
+const cors = require("cors");
+const multer = require("multer");
+const fs = require("fs");
+const OpenAI = require("openai");
 
-  const fileName = req.file?.originalname?.toLowerCase() || "";
+const app = express();
+app.use(cors());
 
-  let result;
+const upload = multer({ dest: "uploads/" });
 
-  // 🌿 PLANTES
-  if (fileName.includes("lily") || fileName.includes("tulip")) {
-    result = {
-      type: "PLANT",
-      object: "Plant toxic",
-      risk: "CRITICAL",
-      explanation: "Très toxique pour chats (risque mortel)",
-      action: "Vétérinaire urgent"
-    };
-  }
-
-  // 🍫 ALIMENTS
-  else if (fileName.includes("choco") || fileName.includes("chocolate")) {
-    result = {
-      type: "FOOD",
-      object: "Chocolate",
-      risk: "HIGH",
-      explanation: "Toxique pour chiens (théobromine)",
-      action: "Surveillance + vétérinaire si ingestion"
-    };
-  }
-
-  // 🧴 PRODUITS MÉNAGERS
-  else if (fileName.includes("bleach") || fileName.includes("clean")) {
-    result = {
-      type: "HOUSEHOLD",
-      object: "Cleaning product",
-      risk: "HIGH",
-      explanation: "Produit corrosif dangereux",
-      action: "Contact vétérinaire immédiat"
-    };
-  }
-
-  // DEFAULT
-  else {
-    result = {
-      type: "UNKNOWN",
-      object: "Unknown item",
-      risk: "MEDIUM",
-      explanation: "Objet non identifié, prudence recommandée",
-      action: "Surveiller l’animal"
-    };
-  }
-
-  res.json(result);
+// 🔐 OpenAI (clé via Render ENV)
+const client = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
 });
+
+app.get("/", (req, res) => {
+  res.send("Animal Detox AI OK");
+});
+
+// 🧠 ANALYSE IMAGE IA
+app.post("/analyze", upload.single("image"), async (req, res) => {
+
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        error: "No image uploaded"
+      });
+    }
+
+    const imageBase64 = fs.readFileSync(req.file.path, {
+      encoding: "base64"
+    });
+
+    const response = await client.responses.create({
+      model: "gpt-4.1-mini",
+      input: [
+        {
+          role: "user",
+          content: [
+            {
+              type: "input_text",
+              text: `
+Tu es un expert vétérinaire.
+
+Analyse cette image et détecte si c'est :
+- plante toxique
+- aliment dangereux
+- produit ménager
+- objet inconnu
+
+Réponds UNIQUEMENT en JSON :
+{
+"type": "PLANT | FOOD | HOUSEHOLD | UNKNOWN",
+"object": "nom",
+"risk": "LOW | MEDIUM | HIGH | CRITICAL",
+"explanation": "explication simple pour propriétaire d'animal",
+"action": "conseil vétérinaire"
+}
+              `
+            },
+            {
+              type: "input_image",
+              image_base64: imageBase64
+            }
+          ]
+        }
+      ]
+    });
+
+    const text = response.output[0].content[0].text;
+
+    res.json(JSON.parse(text));
+
+    fs.unlinkSync(req.file.path);
+
+  } catch (err) {
+    console.log(err);
+
+    res.status(500).json({
+      type: "ERROR",
+      object: "error",
+      risk: "UNKNOWN",
+      explanation: "Erreur analyse IA",
+      action: "Réessayer"
+    });
+  }
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log("Running on port " + PORT));
