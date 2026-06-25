@@ -29,12 +29,14 @@ Retourne uniquement un texte JSON valide :
   ]
 });
 catch (err) {
-  console.log("FULL ERROR:", err);
+  console.log("❌ FULL ERROR:");
+  console.log(err);
+  console.log("❌ MESSAGE:", err?.message);
+  console.log("❌ STACK:", err?.stack);
 
-  res.status(500).json({
+  return res.status(500).json({
     type: "ERROR",
-    explanation: err?.message || JSON.stringify(err),
-    action: "check logs Render"
+    explanation: err?.message || "unknown error",
+    action: "check render logs"
   });
 }
-console.log("OPENAI KEY =", process.env.OPENAI_API_KEY);
