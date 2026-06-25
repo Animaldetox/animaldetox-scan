@@ -2,16 +2,24 @@ const express = require("express");
 const cors = require("cors");
 
 const app = express();
+
 app.use(cors());
 app.use(express.json());
 
-// ROUTE TEST (IMPORTANT)
+// TEST SÛR
 app.get("/", (req, res) => {
   res.send("✅ Animal Detox API OK");
 });
 
-// ROUTE SCANNER
+// DEBUG SIMPLE (GET)
+app.get("/analyze", (req, res) => {
+  res.json({ status: "GET OK" });
+});
+
+// VRAI ENDPOINT
 app.post("/analyze", (req, res) => {
+  console.log("POST received");
+
   res.json({
     object: "chocolate",
     risk_level: "HIGH",
@@ -22,5 +30,5 @@ app.post("/analyze", (req, res) => {
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-  console.log("Server OK on port " + PORT);
-})
+  console.log("Server running on " + PORT);
+});
