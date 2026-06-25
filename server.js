@@ -89,3 +89,33 @@ Réponds UNIQUEMENT en JSON :
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log("Running on port " + PORT));
+
+const response = await client.responses.create({
+  model: "gpt-4.1-mini",
+  input: [
+    {
+      role: "user",
+      content: [
+        {
+          type: "input_text",
+          text: `
+Analyse cette image pour un animal (chien/chat).
+
+Retourne UNIQUEMENT du JSON valide :
+{
+"type": "PLANT | FOOD | HOUSEHOLD | UNKNOWN",
+"object": "nom de l'objet",
+"risk": "LOW | MEDIUM | HIGH | CRITICAL",
+"explanation": "explication simple",
+"action": "conseil pour propriétaire d'animal"
+}
+`
+        },
+        {
+          type: "input_image",
+          image_base64: imageBase64
+        }
+      ]
+    }
+  ]
+});
