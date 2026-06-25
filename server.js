@@ -118,3 +118,4 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log("🐾 Animal Detox running on port", PORT);
 });
+console.log("ENV KEY =", process.env.OPENAI_API_KEY);
