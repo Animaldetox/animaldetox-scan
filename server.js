@@ -1,52 +1,52 @@
-const express = require("express");
-const cors = require("cors");
-const multer = require("multer");
-const fs = require("fs");
-
-const app = express();
-app.use(cors());
-
-const upload = multer({ dest: "uploads/" });
-
-app.get("/", (req, res) => {
-  res.send("Animal Detox API OK");
-});
-
-// 🧠 IA SIMULÉE (on branchera OpenAI après)
 app.post("/analyze", upload.single("image"), (req, res) => {
 
-  const file = req.file;
+  const fileName = req.file?.originalname?.toLowerCase() || "";
 
-  if (!file) {
-    return res.json({
-      error: "no image"
-    });
+  let result;
+
+  // 🌿 PLANTES
+  if (fileName.includes("lily") || fileName.includes("tulip")) {
+    result = {
+      type: "PLANT",
+      object: "Plant toxic",
+      risk: "CRITICAL",
+      explanation: "Très toxique pour chats (risque mortel)",
+      action: "Vétérinaire urgent"
+    };
   }
 
-  // simulation intelligente (étape A)
-  const fakeResults = [
-    {
+  // 🍫 ALIMENTS
+  else if (fileName.includes("choco") || fileName.includes("chocolate")) {
+    result = {
+      type: "FOOD",
       object: "Chocolate",
       risk: "HIGH",
-      explanation: "Toxique pour chiens"
-    },
-    {
-      object: "Lily",
-      risk: "CRITICAL",
-      explanation: "Mortel pour chats"
-    },
-    {
-      object: "Plant unknown",
-      risk: "MEDIUM",
-      explanation: "Plante potentiellement toxique"
-    }
-  ];
+      explanation: "Toxique pour chiens (théobromine)",
+      action: "Surveillance + vétérinaire si ingestion"
+    };
+  }
 
-  const result = fakeResults[Math.floor(Math.random() * fakeResults.length)];
+  // 🧴 PRODUITS MÉNAGERS
+  else if (fileName.includes("bleach") || fileName.includes("clean")) {
+    result = {
+      type: "HOUSEHOLD",
+      object: "Cleaning product",
+      risk: "HIGH",
+      explanation: "Produit corrosif dangereux",
+      action: "Contact vétérinaire immédiat"
+    };
+  }
+
+  // DEFAULT
+  else {
+    result = {
+      type: "UNKNOWN",
+      object: "Unknown item",
+      risk: "MEDIUM",
+      explanation: "Objet non identifié, prudence recommandée",
+      action: "Surveiller l’animal"
+    };
+  }
 
   res.json(result);
-
-  fs.unlinkSync(file.path);
 });
-
-app.listen(3000, () => console.log("running"));
