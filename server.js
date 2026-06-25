@@ -98,19 +98,7 @@ Réponds UNIQUEMENT en JSON valide :
 
     res.json(parsed);
 
-  } catch (err) {
-
-    console.log("❌ SERVER ERROR:", err);
-
-    res.status(500).json({
-      type: "ERROR",
-      object: "server_error",
-      risk: "UNKNOWN",
-      explanation: err?.message || "unknown error",
-      action: "check OpenAI key / Render logs"
-    });
-  }
-});
+  } 
 
 // 🚀 START SERVER
 const PORT = process.env.PORT || 3000;
